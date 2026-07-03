@@ -12,7 +12,7 @@ PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "askdocx")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 _pinecone_client: Optional[Pinecone] = None
-_re_ranker: Optional[Any] = None
+_cohere_client: Optional[Any] = None
 
 def get_pinecone_client() -> Optional[Pinecone]:
     global _pinecone_client
@@ -24,26 +24,17 @@ def get_pinecone_client() -> Optional[Pinecone]:
         return _pinecone_client
     return None
 
-_re_ranker_failed: bool = False
-
-def get_re_ranker() -> Optional[Any]:
-    global _re_ranker, _re_ranker_failed
-    if os.getenv("DISABLE_RE_RANKER") == "true":
-        return None
-        
-    if _re_ranker_failed:
-        return None
-        
-    if _re_ranker is None:
-        try:
-            # Lazy import to prevent loading PyTorch unless re-ranker is enabled
-            from sentence_transformers import CrossEncoder
-            _re_ranker = CrossEncoder("sentence-transformers/ms-marco-MiniLM-L-6-v2")
-        except Exception as e:
-            print(f"Disabling re-ranker: Failed to download/load local Cross-Encoder model: {e}")
-            _re_ranker_failed = True
-            return None
-    return _re_ranker
+def get_cohere_client() -> Optional[Any]:
+    global _cohere_client
+    if _cohere_client is None:
+        cohere_key = os.getenv("COHERE_API_KEY")
+        if cohere_key:
+            try:
+                import cohere
+                _cohere_client = cohere.Client(cohere_key)
+            except Exception as e:
+                print(f"Failed to initialize Cohere client: {e}")
+    return _cohere_client
 
 def get_embeddings_model():
     """Initializes Google Generative AI Embeddings."""
@@ -257,21 +248,27 @@ def query_vector_store(
     if not top_candidates:
         return []
 
-    # 4. Cross-Encoder Re-ranking (Local ms-marco Cross-Encoder model)
+    # 4. Cohere Rerank API Cloud Re-ranking
     try:
-        re_ranker = get_re_ranker()
-        # Predict relevancy for each candidate chunk
-        pairs = [[query_text, c["text"]] for c in top_candidates]
-        ce_scores = re_ranker.predict(pairs)
-        
-        # Attach CE scores
-        for candidate, ce_score in zip(top_candidates, ce_scores):
-            candidate["re_rank_score"] = float(ce_score)
-            
-        # Sort by cross-encoder score descending
-        top_candidates.sort(key=lambda x: x["re_rank_score"], reverse=True)
+        co = get_cohere_client()
+        if co:
+            rerank_results = co.rerank(
+                model="rerank-english-v3.0",
+                query=query_text,
+                documents=[c["text"] for c in top_candidates],
+                top_n=top_k
+            )
+            # Reconstruct candidates based on Cohere rank order
+            reranked_candidates = []
+            for res in rerank_results.results:
+                candidate = top_candidates[res.index]
+                candidate["re_rank_score"] = float(res.relevance_score)
+                reranked_candidates.append(candidate)
+            top_candidates = reranked_candidates
+        else:
+            print("Cohere client not configured. Falling back to RRF rank order.")
     except Exception as e:
-        print(f"Local Cross-Encoder re-ranking failed: {e}. Falling back to RRF rank order.")
+        print(f"Cohere Rerank failed: {e}. Falling back to RRF rank order.")
 
     # Return top_k results
     return top_candidates[:top_k]

@@ -18,7 +18,6 @@ from storage import upload_pdf_to_storage
 from pinecone_service import query_vector_store, get_embeddings_model
 from cache_manager import get_cached_response, set_cached_response, get_semantic_cache, set_semantic_cache
 from worker import process_pdf_task
-from evaluate_rag import run_ragas_evaluation
 
 # Langchain Core / LCEL / Message imports
 from langchain_core.retrievers import BaseRetriever
@@ -602,5 +601,6 @@ async def evaluate_pipeline(req: EvalRequest, current_user: User = Depends(get_c
         } for s in req.samples
     ]
     
+    from evaluate_rag import run_ragas_evaluation
     eval_results = await run_ragas_evaluation(samples_dict)
     return eval_results

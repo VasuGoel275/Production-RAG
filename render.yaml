@@ -58,5 +58,5 @@ envVarGroups:
         sync: false
       - key: PINECONE_INDEX_NAME
         value: askdocx
-      - key: DISABLE_RE_RANKER
-        value: "true"
+      - key: COHERE_API_KEY
+        sync: false
