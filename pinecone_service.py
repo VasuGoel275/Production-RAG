@@ -6,14 +6,13 @@ from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from database import DocumentChunk, Document
 from rank_bm25 import BM25Okapi
-from sentence_transformers import CrossEncoder
 
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "askdocx")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 _pinecone_client: Optional[Pinecone] = None
-_re_ranker: Optional[CrossEncoder] = None
+_re_ranker: Optional[Any] = None
 
 def get_pinecone_client() -> Optional[Pinecone]:
     global _pinecone_client
@@ -27,14 +26,18 @@ def get_pinecone_client() -> Optional[Pinecone]:
 
 _re_ranker_failed: bool = False
 
-def get_re_ranker() -> Optional[CrossEncoder]:
+def get_re_ranker() -> Optional[Any]:
     global _re_ranker, _re_ranker_failed
+    if os.getenv("DISABLE_RE_RANKER") == "true":
+        return None
+        
     if _re_ranker_failed:
         return None
         
     if _re_ranker is None:
         try:
-            # Attempt to load CrossEncoder model
+            # Lazy import to prevent loading PyTorch unless re-ranker is enabled
+            from sentence_transformers import CrossEncoder
             _re_ranker = CrossEncoder("sentence-transformers/ms-marco-MiniLM-L-6-v2")
         except Exception as e:
             print(f"Disabling re-ranker: Failed to download/load local Cross-Encoder model: {e}")

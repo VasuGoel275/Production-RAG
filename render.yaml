@@ -5,11 +5,11 @@ services:
     env: docker
     dockerfilePath: Dockerfile
     dockerContext: .
-    buildCommand: "" # Not needed for Docker
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-    plan: free # Free tier by default, can be upgraded
+    buildCommand: ""
+    dockerCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
     envVars:
-      - group: askdocx-env
+      - fromGroup: askdocx-env
 
   # 2. Streamlit Frontend Web Service
   - type: web
@@ -18,12 +18,12 @@ services:
     dockerfilePath: Dockerfile
     dockerContext: .
     buildCommand: ""
-    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    dockerCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
     plan: free
     envVars:
-      - group: askdocx-env
+      - fromGroup: askdocx-env
       - key: BACKEND_URL
-        sync: false # User will paste the public URL of the backend service (e.g., https://askdocx-backend.onrender.com)
+        sync: false
 
   # 3. Celery Background Worker
   - type: worker
@@ -32,10 +32,10 @@ services:
     dockerfilePath: Dockerfile
     dockerContext: .
     buildCommand: ""
-    startCommand: celery -A worker.celery_app worker --loglevel=info -Q light-pdf,heavy-pdf
+    dockerCommand: celery -A worker.celery_app worker --loglevel=info -Q light-pdf,heavy-pdf
     plan: free
     envVars:
-      - group: askdocx-env
+      - fromGroup: askdocx-env
 
 envVarGroups:
   - name: askdocx-env
@@ -58,3 +58,5 @@ envVarGroups:
         sync: false
       - key: PINECONE_INDEX_NAME
         value: askdocx
+      - key: DISABLE_RE_RANKER
+        value: "true"
