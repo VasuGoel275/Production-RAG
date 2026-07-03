@@ -36,7 +36,9 @@ async def run_ragas_evaluation(eval_samples: List[Dict[str, Any]]) -> Dict[str, 
     evaluator_llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",  # Stable, cost-efficient model for evaluations
         google_api_key=GEMINI_API_KEY,
-        temperature=0.0
+        temperature=0.0,
+        max_retries=10,
+        timeout=180
     )
     evaluator_embeddings = GoogleGenerativeAIEmbeddings(
         model="models/gemini-embedding-001",
@@ -94,7 +96,14 @@ async def run_ragas_evaluation(eval_samples: List[Dict[str, Any]]) -> Dict[str, 
             )
             
             # Aggregate scores safely across different Ragas versions
-            scores_dict = result.scores if hasattr(result, "scores") else dict(result)
+            if hasattr(result, "scores"):
+                if isinstance(result.scores, list):
+                    scores_dict = result.scores[0] if len(result.scores) > 0 else {}
+                else:
+                    scores_dict = result.scores
+            else:
+                scores_dict = dict(result)
+
             for metric, score in scores_dict.items():
                 if score is not None and not math.isnan(score):
                     metric_name = str(metric)
