@@ -323,6 +323,10 @@ Once the evaluation completes, the dashboard will display the generated scores:
 *   **Context Recall (`1.000`):** Verifies that the retriever retrieved all facts required.
 *   **Context Precision (`1.000`):** Confirms the correct pages were retrieved at high rank.
 
+Here is a preview of the RAGAS evaluation dashboard in action:
+
+![RAGAS Evaluation Demo](./static/assets/ragas_eval_demo.png)
+
 ---
 
 ### **Core RAGAS Metrics Explained**
