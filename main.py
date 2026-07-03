@@ -1,4 +1,8 @@
 import os
+import sys
+from unittest.mock import MagicMock
+sys.modules["langchain_community.chat_models.vertexai"] = MagicMock()
+
 from dotenv import load_dotenv
 load_dotenv()
 
