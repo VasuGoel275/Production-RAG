@@ -479,10 +479,15 @@ function setupChatListeners() {
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         }
                         
-                        // 3. Process complete cached result
-                        if (chunk.answer && chunk.cached) {
+                        // 3. Process complete block answer (cached or fallback)
+                        if (chunk.answer) {
                             assistantBubbleContent.textContent = chunk.answer;
                             chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                        
+                        // 4. Process backend errors
+                        if (chunk.error) {
+                            assistantBubbleContent.innerHTML = `<span style="color: var(--error-color);">Error: ${chunk.error}</span>`;
                         }
                     } catch (e) {
                         console.error('Failed to parse line: ', line, e);
