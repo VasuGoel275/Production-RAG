@@ -1,0 +1,60 @@
+services:
+  # 1. FastAPI Backend Web Service
+  - type: web
+    name: askdocx-backend
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    buildCommand: "" # Not needed for Docker
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free # Free tier by default, can be upgraded
+    envVars:
+      - group: askdocx-env
+
+  # 2. Streamlit Frontend Web Service
+  - type: web
+    name: askdocx-frontend
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    buildCommand: ""
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    plan: free
+    envVars:
+      - group: askdocx-env
+      - key: BACKEND_URL
+        sync: false # User will paste the public URL of the backend service (e.g., https://askdocx-backend.onrender.com)
+
+  # 3. Celery Background Worker
+  - type: worker
+    name: askdocx-worker
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    buildCommand: ""
+    startCommand: celery -A worker.celery_app worker --loglevel=info -Q light-pdf,heavy-pdf
+    plan: free
+    envVars:
+      - group: askdocx-env
+
+envVarGroups:
+  - name: askdocx-env
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET_NAME
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: PINECONE_INDEX_NAME
+        value: askdocx

@@ -98,6 +98,8 @@ graph TD
 ├── README.md
 ├── requirements.txt
 ├── schema.sql
+├── Dockerfile                 # Docker build definition for containerized deployments
+├── render.yaml                # Render Blueprint specification for multi-service deployment
 ├── app.py                     # Streamlit Frontend application
 ├── main.py                    # FastAPI Backend API Server
 ├── worker.py                  # Celery background PDF ingestion worker
