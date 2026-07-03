@@ -297,6 +297,34 @@ graph TD
     L --> N[Return Evaluation Results to Streamlit UI]
 ```
 
+### **⚡ RAGAS Evaluation Demo Guide**
+
+We have prepared a sample RAGAS evaluation test suite to verify the performance of the RAG pipeline.
+
+#### **Step 1: Upload the Context Document**
+1. Log in to the application at **`https://askdocx-app-o3z5.onrender.com`**.
+2. Upload the **`QuantumDynamics Inc. Annual Financial and Strategic Report`** PDF in the documents panel on the left sidebar.
+3. Check the checkbox next to the uploaded document to select it as the active context source.
+
+#### **Step 2: Load the RAGAS Test Suite**
+1. Switch to the **RAGAS Evaluation** tab in the main header of the workspace.
+2. Under **RAG Pipeline Tester**, click the upload box and select the **`ragas_eval_sample.json`** file from the project directory.
+3. The dashboard will show: `✓ Suite loaded: 1 samples`.
+
+#### **Step 3: Run the Assessment**
+1. Click the **Run RAGAS Assessment** button.
+2. The backend will sequentially evaluate the test sample against the 4 core RAGAS metrics in a background threadpool to prevent API timeouts.
+3. The evaluation takes about **20–30 seconds** for 1 sample.
+
+#### **Step 4: View the Results**
+Once the evaluation completes, the dashboard will display the generated scores:
+*   **Faithfulness (`1.000`):** Indicates perfect groundedness in the source document.
+*   **Answer Relevancy (`0.881`):** Measures how well the pipeline answers the target question.
+*   **Context Recall (`1.000`):** Verifies that the retriever retrieved all facts required.
+*   **Context Precision (`1.000`):** Confirms the correct pages were retrieved at high rank.
+
+---
+
 ### **Core RAGAS Metrics Explained**
 
 AskDocX integrates the industry-standard **Ragas Framework** to measure four vital dimensions of RAG pipelines:
