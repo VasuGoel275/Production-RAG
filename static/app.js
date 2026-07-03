@@ -418,7 +418,7 @@ function setupChatListeners() {
         };
         
         try {
-            const response = await fetch('/query', {
+            const response = await fetch('/chat/query/stream', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -637,7 +637,7 @@ async function runAutomatedEvaluation() {
         evalProgressBarFill.style.width = `${((i + 1) / total) * 50}%`; // First 50% for query loops
         
         try {
-            const queryRes = await fetch('/query', {
+            const queryRes = await fetch('/chat/query/stream', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
