@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-load_dotenv(override=True)
+load_dotenv()
 
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, Header, BackgroundTasks
 from fastapi.responses import StreamingResponse, RedirectResponse
