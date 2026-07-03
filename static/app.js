@@ -209,7 +209,7 @@ function setupDropZone() {
     
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
-            handleFileUpload(e.target.files[0]);
+            handleMultipleFileUploads(e.target.files);
         }
     });
     
@@ -226,48 +226,56 @@ function setupDropZone() {
         e.preventDefault();
         dropZone.classList.remove('dragover');
         if (e.dataTransfer.files.length > 0) {
-            handleFileUpload(e.dataTransfer.files[0]);
+            handleMultipleFileUploads(e.dataTransfer.files);
         }
     });
 }
 
-async function handleFileUpload(file) {
-    if (!file.name.endsWith('.pdf')) {
-        showToast('Only PDF files are supported.', true);
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    
+async function handleMultipleFileUploads(files) {
     uploadProgressContainer.classList.remove('hidden');
-    uploadProgressBarFill.style.width = '20%';
-    uploadStatusText.textContent = 'Uploading...';
+    uploadProgressBarFill.style.width = '10%';
+    let uploadedCount = 0;
+    const total = files.length;
     
-    try {
-        const res = await fetch('/upload', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-        });
-        
-        if (res.ok) {
-            uploadProgressBarFill.style.width = '100%';
-            uploadStatusText.textContent = 'Upload complete! Processing...';
-            showToast('Document uploaded successfully.');
-            setTimeout(() => {
-                uploadProgressContainer.classList.add('hidden');
-            }, 2000);
-            loadDocuments();
-        } else {
-            const data = await res.json();
-            showToast(data.detail || 'Upload failed', true);
-            uploadProgressContainer.classList.add('hidden');
+    for (let i = 0; i < total; i++) {
+        const file = files[i];
+        if (!file.name.endsWith('.pdf')) {
+            showToast(`Skipping ${file.name}: Only PDF files are supported.`, true);
+            continue;
         }
-    } catch (err) {
-        showToast('Upload failed due to connection error', true);
-        uploadProgressContainer.classList.add('hidden');
+        
+        uploadStatusText.textContent = `Uploading ${i + 1} of ${total}: ${file.name}...`;
+        uploadProgressBarFill.style.width = `${((i) / total) * 80 + 10}%`;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const res = await fetch('/upload', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            
+            if (res.ok) {
+                uploadedCount++;
+            } else {
+                const data = await res.json();
+                showToast(`Failed to upload ${file.name}: ${data.detail || 'Error'}`, true);
+            }
+        } catch (err) {
+            showToast(`Network error uploading ${file.name}`, true);
+        }
     }
+    
+    uploadProgressBarFill.style.width = '100%';
+    uploadStatusText.textContent = `Completed! Uploaded ${uploadedCount} of ${total} files.`;
+    showToast(`Uploaded ${uploadedCount} documents successfully.`);
+    loadDocuments();
+    
+    setTimeout(() => {
+        uploadProgressContainer.classList.add('hidden');
+    }, 3000);
 }
 
 // SESSIONS / CHAT HISTORIES
