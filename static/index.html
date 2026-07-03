@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AskDocX - Production-Grade RAG Workstation</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    
+    <!-- AUTHENTICATION SCREEN -->
+    <div id="auth-screen" class="screen active">
+        <div class="auth-container">
+            <div class="auth-brand">
+                <i class="fa-solid fa-brain-circuit brand-icon"></i>
+                <h1>AskDocX</h1>
+                <p>Enterprise retrieval-augmented generation workstation</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active">
+                <h2>Welcome Back</h2>
+                <div class="input-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="name@company.com">
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                <p class="auth-toggle">Don't have an account? <span onclick="toggleAuthForm('signup')">Sign Up</span></p>
+            </form>
+            
+            <!-- Signup Form -->
+            <form id="signup-form" class="auth-form">
+                <h2>Create Account</h2>
+                <div class="input-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" required placeholder="name@company.com">
+                </div>
+                <div class="input-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required placeholder="Min 6 characters">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+                <p class="auth-toggle">Already have an account? <span onclick="toggleAuthForm('login')">Sign In</span></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN WORKSPACE SCREEN -->
+    <div id="app-screen" class="screen">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <i class="fa-solid fa-brain-circuit text-gradient"></i>
+                    <span>AskDocX</span>
+                </div>
+                <button id="logout-btn" title="Sign Out"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+            
+            <!-- Document Upload & List Section -->
+            <div class="sidebar-section">
+                <h3><i class="fa-solid fa-file-pdf"></i> Documents</h3>
+                
+                <div class="upload-zone" id="drop-zone">
+                    <input type="file" id="file-input" accept=".pdf" style="display: none;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p>Click or drag PDF to upload</p>
+                </div>
+                <div id="upload-progress-container" class="upload-progress-container hidden">
+                    <div class="progress-bar">
+                        <div id="upload-progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                    <span id="upload-status-text">Uploading...</span>
+                </div>
+                
+                <div class="document-list" id="document-list">
+                    <!-- Loaded dynamically -->
+                    <div class="loading-placeholder">Loading documents...</div>
+                </div>
+            </div>
+
+            <!-- Sessions List Section -->
+            <div class="sidebar-section spacer">
+                <div class="section-title-row">
+                    <h3><i class="fa-solid fa-comments"></i> Chat History</h3>
+                    <button id="new-session-btn" title="New Chat"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="session-list" id="session-list">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <i class="fa-regular fa-circle-user"></i>
+                    <span id="user-email-display">user@company.com</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <main class="chat-container">
+            <header class="chat-header">
+                <div class="workspace-nav">
+                    <button class="nav-tab active" id="tab-chat" onclick="switchTab('chat')">
+                        <i class="fa-solid fa-message"></i> Chat Workstation
+                    </button>
+                    <button class="nav-tab" id="tab-eval" onclick="switchTab('eval')">
+                        <i class="fa-solid fa-gauge-high"></i> RAGAS Evaluation
+                    </button>
+                </div>
+                <div class="chat-title-info">
+                    <span id="selected-docs-count">0 documents selected for context</span>
+                </div>
+            </header>
+
+            <!-- 1. CHAT WORKSPACE VIEW -->
+            <div id="view-chat" class="tab-view active">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="welcome-message-box">
+                        <i class="fa-solid fa-comments text-gradient logo-large"></i>
+                        <h2>Welcome to AskDocX</h2>
+                        <p>Upload documents on the left, select the ones you want to query, and start chatting.</p>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <form id="chat-form">
+                        <input type="text" id="chat-input" placeholder="Select a chat session from history to start..." disabled autocomplete="off">
+                        <button type="submit" id="send-btn" disabled><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 2. RAGAS EVALUATION VIEW -->
+            <div id="view-eval" class="tab-view">
+                <div class="eval-workspace">
+                    <div class="eval-card">
+                        <h3><i class="fa-solid fa-microscope text-gradient"></i> RAG Pipeline Tester</h3>
+                        <p>Upload a JSON test set containing questions and ground truths to run automated RAGAS metrics assessments.</p>
+                        
+                        <div class="upload-zone" id="eval-drop-zone">
+                            <input type="file" id="eval-file-input" accept=".json" style="display: none;">
+                            <i class="fa-solid fa-file-code"></i>
+                            <p>Click or drag test suite JSON file</p>
+                        </div>
+                        
+                        <div id="eval-suite-info" class="hidden">
+                            <div class="suite-status-box">
+                                <i class="fa-solid fa-circle-check text-gradient"></i>
+                                <span id="eval-suite-status">✓ Suite loaded: 0 samples</span>
+                            </div>
+                            <button id="run-eval-btn" class="btn btn-primary btn-block">🚀 Run RAGAS Assessment</button>
+                        </div>
+                        
+                        <div id="eval-progress-container" class="upload-progress-container hidden">
+                            <div class="progress-bar">
+                                <div id="eval-progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+                            </div>
+                            <span id="eval-status-text">Querying pipeline (0/0)...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="eval-results-card" class="eval-card hidden">
+                        <h3><i class="fa-solid fa-chart-simple text-gradient"></i> RAGAS Evaluation Results</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-box">
+                                <div class="metric-label">Faithfulness</div>
+                                <div class="metric-value text-gradient" id="val-faithfulness">-</div>
+                                <div class="metric-desc">Factual consistency with sources</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-label">Answer Relevancy</div>
+                                <div class="metric-value text-gradient" id="val-relevancy">-</div>
+                                <div class="metric-desc">Relevance of answer to question</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-label">Context Recall</div>
+                                <div class="metric-value text-gradient" id="val-recall">-</div>
+                                <div class="metric-desc">Completeness of retrieved source info</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-label">Context Precision</div>
+                                <div class="metric-value text-gradient" id="val-precision">-</div>
+                                <div class="metric-desc">Relevance of retrieved source pages</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Context / Sources Panel -->
+        <aside class="sources-panel" id="sources-panel">
+            <div class="panel-header">
+                <h3><i class="fa-solid fa-quote-left text-gradient"></i> Retrieved Sources</h3>
+            </div>
+            <div class="panel-content" id="sources-list">
+                <div class="sources-placeholder">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <p>Ask a question to see matching context sources here.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">Status Message</div>
+
+    <script src="app.js"></script>
+</body>
+</html>

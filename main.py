@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, Header
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, Header, BackgroundTasks
+from fastapi.responses import StreamingResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional, Any
@@ -225,6 +225,7 @@ def get_session_messages(session_id: str, current_user: User = Depends(get_curre
 
 @app.post("/upload")
 async def upload_document(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user_custom),
     db: Session = Depends(get_db)
@@ -242,9 +243,6 @@ async def upload_document(
         page_count = len(pdf_doc)
         pdf_doc.close()
         
-        # Determine target queue based on page count
-        queue_name = "heavy-pdf" if page_count > 100 else "light-pdf"
-        
         # 1. Upload to Supabase Storage
         storage_url = upload_pdf_to_storage(str(current_user.id), str(doc_id), file.filename, file_bytes)
         
@@ -260,10 +258,13 @@ async def upload_document(
         db.commit()
         db.refresh(new_doc)
         
-        # 3. Trigger background processing task with dedicated queue (Celery + Redis)
-        process_pdf_task.apply_async(
-            args=[str(current_user.id), str(doc_id), file.filename, storage_url],
-            queue=queue_name
+        # 3. Trigger background processing task using FastAPI native BackgroundTasks thread pool
+        background_tasks.add_task(
+            process_pdf_task,
+            str(current_user.id),
+            str(doc_id),
+            file.filename,
+            storage_url
         )
         
         return {
@@ -604,3 +605,13 @@ async def evaluate_pipeline(req: EvalRequest, current_user: User = Depends(get_c
     from evaluate_rag import run_ragas_evaluation
     eval_results = await run_ragas_evaluation(samples_dict)
     return eval_results
+
+# Serve static frontend SPA
+from fastapi.staticfiles import StaticFiles
+
+# Mount the static files directory
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+def redirect_to_index():
+    return RedirectResponse(url="/static/index.html")
