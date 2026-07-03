@@ -3,12 +3,12 @@
     --bg-primary: #0a0c10;
     --bg-secondary: #121620;
     --bg-tertiary: #191f2e;
-    --accent-color: #3b82f6;
-    --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    --accent-color: #FF6B6B;
+    --accent-gradient: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
     --text-main: #f3f4f6;
     --text-muted: #9ca3af;
     --border-color: rgba(255, 255, 255, 0.08);
-    --border-glow: rgba(59, 130, 246, 0.35);
+    --border-glow: rgba(255, 107, 107, 0.35);
     --success-color: #10b981;
     --error-color: #ef4444;
     --font-heading: 'Outfit', sans-serif;

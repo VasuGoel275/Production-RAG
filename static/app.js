@@ -287,8 +287,11 @@ async function loadSessions() {
 function renderSessions(sessions) {
     sessionList.innerHTML = '';
     sessions.forEach(sess => {
+        if (sess.title.startsWith("Automated ")) return; // Filter out automated evaluation sessions
+        
         const item = document.createElement('div');
         item.className = `session-item ${activeSessionId === sess.id ? 'active' : ''}`;
+        item.dataset.id = sess.id;
         item.innerHTML = `
             <i class="fa-regular fa-message"></i>
             <span>${sess.title}</span>
@@ -315,8 +318,7 @@ function setupSessionListeners() {
             const data = await res.json();
             if (res.ok) {
                 activeSessionId = data.id;
-                selectSession(data.id, data.title);
-                loadSessions();
+                loadSessions().then(() => selectSession(data.id, data.title));
             } else {
                 showToast(data.detail || 'Failed to create session', true);
             }
@@ -337,7 +339,11 @@ async function selectSession(sessionId, title) {
     
     // Active session item in sidebar
     document.querySelectorAll('.session-item').forEach(item => {
-        item.classList.remove('active');
+        if (item.dataset.id === sessionId) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
     });
     
     // Load existing messages
