@@ -20,3 +20,4 @@ datasets
 pandas
 rank_bm25
 cohere
+langchain-community

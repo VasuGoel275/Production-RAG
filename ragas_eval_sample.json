@@ -2,25 +2,5 @@
   {
     "question": "What is the primary mission of QuantumDynamics Inc.?",
     "ground_truth": "The primary mission of QuantumDynamics Inc. is to commercialize room-temperature quantum computing systems."
-  },
-  {
-    "question": "What was the total revenue of QuantumDynamics Inc. in FY 2026 and what was its year-over-year growth rate?",
-    "ground_truth": "The total revenue reached $154.3 million, representing a year-over-year growth of 42%."
-  },
-  {
-    "question": "How many logical qubits did QuantumDynamics Inc. successfully stabilize at room temperature?",
-    "ground_truth": "They successfully stabilized 256 logical qubits at room temperature."
-  },
-  {
-    "question": "What is the version of the customized quantum operating system released and what kernel is it based on?",
-    "ground_truth": "The customized quantum operating system released is Q-OS v2.1, and it is based on the Linux kernel 6.8."
-  },
-  {
-    "question": "Which company did QuantumDynamics Inc. partner with for robotics control integration?",
-    "ground_truth": "They established a long-term strategic partnership with Cyberdyne Systems."
-  },
-  {
-    "question": "What was the revenue and year-over-year growth rate for the Quantum Chip Division in FY 2026?",
-    "ground_truth": "The Quantum Chip Division revenue was $84.2 Million, representing a year-over-year growth of +55%."
   }
 ]
