@@ -1,38 +1,12 @@
 services:
-  # 1. FastAPI Backend Web Service
+  # Single Unified Web Service (runs Backend, Celery, and Streamlit in one container)
   - type: web
-    name: askdocx-backend
+    name: askdocx-app
     env: docker
     dockerfilePath: Dockerfile
     dockerContext: .
     buildCommand: ""
-    dockerCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-    plan: free
-    envVars:
-      - fromGroup: askdocx-env
-
-  # 2. Streamlit Frontend Web Service
-  - type: web
-    name: askdocx-frontend
-    env: docker
-    dockerfilePath: Dockerfile
-    dockerContext: .
-    buildCommand: ""
-    dockerCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
-    plan: free
-    envVars:
-      - fromGroup: askdocx-env
-      - key: BACKEND_URL
-        sync: false
-
-  # 3. Celery Background Worker
-  - type: worker
-    name: askdocx-worker
-    env: docker
-    dockerfilePath: Dockerfile
-    dockerContext: .
-    buildCommand: ""
-    dockerCommand: celery -A worker.celery_app worker --loglevel=info -Q light-pdf,heavy-pdf
+    # Defaults to CMD ["./run.sh"] inside Dockerfile
     plan: free
     envVars:
       - fromGroup: askdocx-env
@@ -56,7 +30,7 @@ envVarGroups:
         sync: false
       - key: JWT_SECRET_KEY
         sync: false
-      - key: PINECONE_INDEX_NAME
-        value: askdocx
       - key: COHERE_API_KEY
         sync: false
+      - key: PINECONE_INDEX_NAME
+        value: askdocx
