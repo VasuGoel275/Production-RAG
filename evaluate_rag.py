@@ -93,9 +93,10 @@ async def run_ragas_evaluation(eval_samples: List[Dict[str, Any]]) -> Dict[str, 
                 embeddings=ragas_embeddings
             )
             
-            # Aggregate scores
-            for metric, score in dict(result).items():
-                if not math.isnan(score):
+            # Aggregate scores safely across different Ragas versions
+            scores_dict = result.scores if hasattr(result, "scores") else dict(result)
+            for metric, score in scores_dict.items():
+                if score is not None and not math.isnan(score):
                     metric_name = str(metric)
                     accumulated_scores[metric_name] = accumulated_scores.get(metric_name, 0.0) + score
             successful_samples += 1
