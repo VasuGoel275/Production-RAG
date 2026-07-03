@@ -1,0 +1,14 @@
+[
+  {
+    "question": "What is the primary objective of this project?",
+    "ground_truth": "The primary objective is to build a production-grade RAG chatbot with multi-user isolation, high-concurrency document ingestion, and automated evaluations."
+  },
+  {
+    "question": "Which embedding model is used in the pipeline and what is its default dimensionality?",
+    "ground_truth": "Both the Pinecone index and Ragas evaluation pipeline utilize the unified models/gemini-embedding-001 model, which outputs 3072-dimensional vectors by default."
+  },
+  {
+    "question": "How are small and large PDF files processed in the ingestion pipeline?",
+    "ground_truth": "PDF files are dynamically routed based on their page count using PyMuPDF. PDFs with greater than 100 pages go to the heavy-pdf queue, and smaller PDFs go to the light-pdf queue."
+  }
+]
