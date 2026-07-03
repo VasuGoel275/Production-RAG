@@ -4,7 +4,7 @@ import math
 import asyncio
 from typing import List, Dict, Any
 from datasets import Dataset
-from ragas import aevaluate
+from ragas import aevaluate, RunConfig
 from ragas.metrics import faithfulness, answer_relevancy, context_recall, context_precision
 from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings.base import LangchainEmbeddingsWrapper
@@ -88,11 +88,13 @@ async def run_ragas_evaluation(eval_samples: List[Dict[str, Any]]) -> Dict[str, 
         
         try:
             print(f"Evaluating sample {idx + 1}/{len(dataset)}...")
+            run_config = RunConfig(timeout=300, max_workers=1)
             result = await aevaluate(
                 dataset=single_dataset,
                 metrics=metrics,
                 llm=ragas_llm,
-                embeddings=ragas_embeddings
+                embeddings=ragas_embeddings,
+                run_config=run_config
             )
             
             # Aggregate scores safely across different Ragas versions
