@@ -783,6 +783,7 @@ input, button, textarea {
    SOURCES PANEL (RIGHT PANEL)
    ========================================================================== */
 .sources-panel {
+    display: none !important;
     width: var(--sources-width);
     background: var(--bg-surface);
     border-left: 1px solid var(--border-subtle);
