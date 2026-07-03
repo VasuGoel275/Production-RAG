@@ -90,3 +90,6 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# Auto-create all tables in the database if they don't exist
+Base.metadata.create_all(bind=engine)
